@@ -7,7 +7,7 @@
     "128": "icon.png"
   },
   "permissions": [
-    "activeTab"
+    "tabs"
   ],
   "background": {
     "service_worker": "background/background.js",
