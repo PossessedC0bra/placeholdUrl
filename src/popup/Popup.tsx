@@ -111,7 +111,7 @@ function Popup() {
                         )
                         : (
                             Object.keys(placeholderValueMap)
-                                .map((placeholder) => (
+                                .map((placeholder, idx) => (
                                     <div key={placeholder} className="space-y-1">
                                         <Label htmlFor={placeholder}>
                                             {toPlaceholderName(placeholder)}
@@ -120,6 +120,7 @@ function Popup() {
                                             id={placeholder}
                                             value={placeholderValueMap[placeholder] || ""}
                                             onChange={(e) => handlePlaceholderChange(placeholder, e.target.value)}
+                                            autoFocus={idx === 0}
                                         />
                                     </div>
                                 ))
