@@ -1,5 +1,11 @@
 # PlaceholdURL
 
+<div align="center">
+    <a href="https://chromewebstore.google.com/detail/lfffjfikoljhppgiijkhmnjamganhjjm?utm_source=item-share-cb">
+        <img src="./docs/chrome-webstore.png" alt="Version">
+    </a>
+</div>
+
 ## 🚀 Key Features
 
 - 💡 Detect placeholders like `{{userId}}` in URLs
