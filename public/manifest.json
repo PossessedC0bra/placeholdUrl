@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "PlaceholdURL",
-  "version": "0.0.1",
-  "description": "Fill placeholders in URLs and easily navigate to the resulting link",
+  "version": "1.0.0",
+  "description": "Fill placeholders in URLs and navigate with a single click",
   "icons": {
     "128": "icon.png"
   },
