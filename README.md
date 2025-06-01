@@ -2,7 +2,7 @@
 
 <div align="center">
     <a href="https://chromewebstore.google.com/detail/placeholdurl/lfffjfikoljhppgiijkhmnjamganhjjm">
-        <img src="./docs/chrome-webstore.png" alt="Version">
+        <img src="./docs/chrome-webstore.png" alt="Chrome Web Store Badge">
     </a>
 </div>
 
