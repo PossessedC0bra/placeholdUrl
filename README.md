@@ -1,7 +1,7 @@
 # PlaceholdURL
 
 <div align="center">
-    <a href="https://chromewebstore.google.com/detail/lfffjfikoljhppgiijkhmnjamganhjjm?utm_source=item-share-cb">
+    <a href="https://chromewebstore.google.com/detail/placeholdurl/lfffjfikoljhppgiijkhmnjamganhjjm">
         <img src="./docs/chrome-webstore.png" alt="Version">
     </a>
 </div>
