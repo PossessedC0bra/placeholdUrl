@@ -1,0 +1,11 @@
+@import "@/pages/index.css";
+
+body {
+    /* defined by chrome developer guidelines (https://developer.chrome.com/docs/extensions/reference/api/action#:~:text=An%20action's%20popup%20is%20shown%20when%20the%20user%20clicks%20on%20the%20extension's%20action%20button%20in%20thetoolbar.%20The%20popup%20can%20contain%20any%20HTML%20contents%20you%20like%2C%20and%20will%20be%20automatically%20sized%20to%20fitits%20contents.%20The%20popup's%20size%20must%20be%20between%2025x25%20and%20800x600%20pixels.) */
+    min-width: 25px;
+    min-height: 25px;
+    max-width: 800px;
+    max-height: 600px;
+
+    width: 500px
+}
