@@ -2,8 +2,9 @@ import { loadConfigFromFile, type ConfigEnv, type Plugin, type ResolvedConfig } 
 import path from 'path'
 import fs from 'fs'
 import archiver from 'archiver'
+import type { ManifestV3 } from './ManifestV3';
 
-export default function chromeExtensionPlugin(): Plugin {
+export function chromeExtensionPlugin(): Plugin {
   let manifest: ManifestV3;
   let config: ResolvedConfig
 
@@ -17,15 +18,13 @@ export default function chromeExtensionPlugin(): Plugin {
       manifest = await loadManifest(env, resolvedManifestPath);
 
       const inputs = [];
+      
       // Background script
       if (manifest.background?.service_worker) {
         inputs.push(path.resolve(root, manifest.background.service_worker))
       }
       if (manifest.action?.default_popup) {
         inputs.push(manifest.action.default_popup);
-      }
-      if (manifest.action?.default_sidebar) {
-        inputs.push(manifest.action.default_sidebar);
       }
 
       return {
@@ -110,29 +109,18 @@ async function zipDir(sourceDir: string, outZip: string): Promise<void> {
   })
 }
 
-interface ManifestV3 {
-  manifest_version: 3;
-  name: string;
-  version: string;
-  version_name?: string;
-  description: string;
-  icons: {
-    16?: string;
-    32?: string;
-    64?: string;
-    128?: string;
-  }
-  permissions: string[]; // TODO ykl: sum type?
-  background: {
-    service_worker: string;
-    type: string; // TODO ykl: sum type?
-  };
-  action: {
-    default_popup: string;
-    default_sidebar: string;
-  }
-}
+type ManifestV3FnObject = (env: ConfigEnv) => ManifestV3;
+type ManifestV3FnPromise = (env: ConfigEnv) => Promise<ManifestV3>;
+type ManifestV3Fn = (env: ConfigEnv) => ManifestV3 | Promise<ManifestV3>;
+type ManifestV3Export = ManifestV3 | Promise<ManifestV3> | ManifestV3FnObject | ManifestV3FnPromise | ManifestV3Fn;
 
-export function defineManifest(manifest: ManifestV3): ManifestV3 {
-  return manifest;
+declare function defineManifest(config: ManifestV3): ManifestV3;
+declare function defineManifest(config: Promise<ManifestV3>): Promise<ManifestV3>;
+declare function defineManifest(config: ManifestV3FnObject): ManifestV3FnObject;
+declare function defineManifest(config: ManifestV3FnPromise): ManifestV3FnPromise;
+declare function defineManifest(config: ManifestV3Fn): ManifestV3Fn;
+declare function defineManifest(config: ManifestV3Export): ManifestV3Export;
+
+export {
+  defineManifest
 }

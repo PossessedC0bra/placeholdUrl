@@ -1,8 +1,11 @@
 {
-  "name": "PlaceholdUrl",
+  "name": "placehold-url",
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@placehold-url/vite-chrome-extension-plugin": "^1.0.0",
     "@types/archiver": "^6.0.3",
     "@types/chrome": "^0.0.323",
     "@types/node": "^22.15.21",

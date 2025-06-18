@@ -3,10 +3,13 @@
  * TypeScript type definition
  */
 
+export type ChromeWebStoreManifestV3 = ManifestV3 & Required<Pick<ManifestV3, 'description' | 'icons'>>;
+
 export interface ManifestV3 {
   manifest_version: 3
   name: string
   version: string
+
   default_locale?: string
   description?: string
   icons?: Partial<Record<'16' | '32' | '48' | '128' | '256' | '512', string>>

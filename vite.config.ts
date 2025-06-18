@@ -2,22 +2,22 @@ import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
-import chromeExtensionPlugin from "./lib/vite-chrome-extension-plugin/vite-chrome-extension-plugin";
+import chromeExtension from "@placehold-url/vite-chrome-extension-plugin";
 
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [
         react(),
         tailwindcss(),
-        chromeExtensionPlugin(),
+        chromeExtension(),
     ],
     resolve: {
+        preserveSymlinks: true,
         alias: {
             "@": path.resolve(__dirname, "./src"),
         },
     },
     build: {
-        emptyOutDir: true,
     //     rollupOptions: {
     //         input: {
     //             manifest: path.resolve(__dirname, './src/manifest.ts'),
