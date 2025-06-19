@@ -5,7 +5,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {ExternalLink, Replace} from "lucide-react";
 import {GLOBAL_PLACEHOLDER_REGEX, toPlaceholderName} from "@/lib/placeholder/placeholderUtil";
-import {Label} from "@radix-ui/react-label";
+import {Label} from "@/components/ui/label";
 
 function extractPlaceholders(url: string): Record<string, string> {
     return Array.from(url.matchAll(GLOBAL_PLACEHOLDER_REGEX))
