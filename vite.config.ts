@@ -5,7 +5,6 @@ import tailwindcss from "@tailwindcss/vite"
 import {crx} from "@crxjs/vite-plugin";
 import manifest from "./src/manifest.ts";
 import zip from "vite-plugin-zip-pack";
-import {name, version} from "./package.json";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,7 +14,7 @@ export default defineConfig({
         crx({manifest}),
         zip({
             outDir: "dist",
-            outFileName: `${name}-${version}.zip`,
+            outFileName: `extension.zip`,
         }),
     ],
     resolve: {
