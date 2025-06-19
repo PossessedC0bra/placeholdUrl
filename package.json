@@ -2,15 +2,14 @@
   "name": "placehold-url",
   "private": true,
   "version": "1.0.0",
+  "description": "Fill placeholders in URLs and navigate with a single click",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "build-dev": "tsc -b && vite build --mode development",
     "lint": "eslint .",
+    "build-dev": "vite build --mode development",
+    "build": "vite build",
+    "dev": "vite",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,8 +26,8 @@
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.2",
     "@eslint/js": "^9.25.0",
-    "@placehold-url/vite-chrome-extension-plugin": "^1.0.0",
     "@types/archiver": "^6.0.3",
     "@types/chrome": "^0.0.323",
     "@types/node": "^22.15.21",
@@ -40,10 +39,11 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "rollup-plugin-zip": "^1.0.3",
+    "pnpm": "^10.12.1",
     "tw-animate-css": "^1.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-zip-pack": "^1.2.4"
   }
 }
