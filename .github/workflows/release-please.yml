@@ -30,7 +30,7 @@ jobs:
       - name: Upload to Chrome Web Store
         uses: mobilefirstllc/cws-publish@latest
         with:
-          action: ${{ steps.release.outputs.release_created && 'publish' || 'update' }}
+          action: ${{ steps.release.outputs.release_created && 'publish' || 'upload' }}
           extension_id: lfffjfikoljhppgiijkhmnjamganhjjm
           client_id: ${{ secrets.CHROME_WEBSTORE_OAUTH_CLIENT_ID }}
           client_secret: ${{ secrets.CHROME_WEBSTORE_OAUTH_CLIENT_SECRET }}
