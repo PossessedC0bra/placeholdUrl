@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/PossessedC0bra/placeholdUrl/compare/v1.0.2...v1.0.3) (2025-06-24)
+
+
+### Miscellaneous Chores
+
+* release 1.0.3 ([1f1238b](https://github.com/PossessedC0bra/placeholdUrl/commit/1f1238b84f331fef512afc12e75fcf305419ee4e))
+
 ## [1.0.2](https://github.com/PossessedC0bra/placeholdUrl/compare/v1.0.1...v1.0.2) (2025-06-24)
 
 
