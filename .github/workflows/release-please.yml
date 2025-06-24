@@ -17,13 +17,28 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension
+
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
+
+      - name: Upload to Chrome Web Store
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: ${{ steps.release.outputs.release_created && 'publish' || 'update' }}
+          extension_id: lfffjfikoljhppgiijkhmnjamganhjjm
+          client_id: ${{ secrets.CHROME_WEBSTORE_OAUTH_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_WEBSTORE_OAUTH_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_WEBSTORE_OAUTH_REFRESH_TOKEN }}
+          zip_file: extension.zip
 
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} ./artifact/extension.zip
+        run: gh release upload ${{ steps.release.outputs.tag_name }} extension.zip --clobber
