@@ -1,3 +1,4 @@
+import {scan} from "react-scan"; // must be imported before React and React DOM
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
@@ -7,6 +8,10 @@ import {ChromeExtensionStorageApi, ChromeExtensionTabApi} from "@/lib/browser/ch
 import Popup from "@/popup/Popup.tsx";
 
 const isProduction = import.meta.env.MODE === 'production';
+
+scan({
+    enable: !isProduction,
+})
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
