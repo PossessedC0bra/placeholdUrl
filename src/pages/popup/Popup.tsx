@@ -1,15 +1,15 @@
-import {useEffect, useState} from "react";
-import {Badge} from "@/components/ui/badge";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Check, ChevronDown, ChevronUp, ExternalLink, Pencil, Replace, Search, X, History} from "lucide-react";
-import {GLOBAL_PLACEHOLDER_REGEX, toPlaceholderName} from "@/lib/placeholder/placeholderUtil";
-import {Label} from "@/components/ui/label";
-import {InputWithAdornments} from "@/components/InputWithAdornments.tsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {Card, CardContent, CardFooter} from "@/components/ui/card.tsx";
-import {useHistoryStore, type HistoryItem} from "@/pages/popup/PopupStore.ts";
-import {cn} from "@/lib/utils.ts";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronDown, ChevronUp, ExternalLink, Pencil, Replace, Search, X, History } from "lucide-react";
+import { GLOBAL_PLACEHOLDER_REGEX, toPlaceholderName } from "@/lib/placeholder/placeholderUtil";
+import { Label } from "@/components/ui/label";
+import { InputWithAdornments } from "@/components/InputWithAdornments.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Card, CardContent, CardFooter } from "@/components/ui/card.tsx";
+import { useHistoryStore, type HistoryItem } from "@/pages/popup/PopupStore.ts";
+import { cn } from "@/lib/utils.ts";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 function Popup() {
@@ -20,7 +20,7 @@ function Popup() {
 
     useEffect(() => {
         (async () => {
-            const [activeTab] = await chrome.tabs.query({active: true, currentWindow: true});
+            const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (!activeTab || !activeTab.url) {
                 console.error("No active tab with a valid URL found.");
                 return;
@@ -74,7 +74,7 @@ function Popup() {
         };
         addHistoryItem(plainUrl, resolvedUrl, historyItem);
 
-        await chrome.tabs.update(tab!.id!, {url: resolvedUrl});
+        await chrome.tabs.update(tab!.id!, { url: resolvedUrl });
         window.close(); // Close the popup after replacing
     };
 
@@ -87,7 +87,7 @@ function Popup() {
         >
             {/* Header */}
             <div className="mx-3 flex items-center gap-2">
-                <Replace/>
+                <Replace />
                 <span className="text-2xl font-bold">PlaceholdURL</span>
             </div>
 
@@ -97,7 +97,7 @@ function Popup() {
                         key="urlPreview"
                         className={`flex-none mx-4 p-2 bg-muted rounded-md border overflow-x-auto`}
                     >
-                        <PlaceholderUrlPreview urlParts={urlParts} placeholderValueMap={placeholderValueMap}/>
+                        <PlaceholderUrlPreview urlParts={urlParts} placeholderValueMap={placeholderValueMap} />
                     </div>
 
                     <div
@@ -140,7 +140,7 @@ function Popup() {
                     disabled={Object.keys(placeholderValueMap).length === 0 || Object.values(placeholderValueMap).some(v => v.trim() === "")}
                     className="mx-3"
                 >
-                    <ExternalLink/>
+                    <ExternalLink />
                     Open
                 </Button>
             }
@@ -148,7 +148,7 @@ function Popup() {
     );
 }
 
-const PlaceholderUrlPreview = ({urlParts, placeholderValueMap, className}: {
+const PlaceholderUrlPreview = ({ urlParts, placeholderValueMap, className }: {
     urlParts: [boolean, string][],
     placeholderValueMap: Record<string, string>
     className?: string
@@ -165,7 +165,7 @@ const PlaceholderUrlPreview = ({urlParts, placeholderValueMap, className}: {
     </code>
 );
 
-const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string][] }) => {
+const HistoryView = ({ url, urlParts }: { url: string, urlParts: [boolean, string][] }) => {
     const isExpanded = useHistoryStore(state => state.isHistoryExpanded);
     const setIsExpanded = useHistoryStore(state => state.setHistoryExpanded);
 
@@ -186,19 +186,19 @@ const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string]
             ref={historyView}
             className={`${!isExpanded ? "flex-none" : "flex-1"} px-4 overflow-y-hidden flex flex-col gap-2`}
         >
-            <HistoryHeader itemCount={numberOfItems}/>
+            <HistoryHeader itemCount={numberOfItems} />
 
             {isExpanded
                 && <div className="flex items-center gap-2">
                     <InputWithAdornments
-                        startAdornment={<Search/>}
+                        startAdornment={<Search />}
                         placeholder={'Search...'}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <Select>
                         <SelectTrigger className="">
-                            <SelectValue placeholder="Sort by..."/>
+                            <SelectValue placeholder="Sort by..." />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="lastUsed">Last Used</SelectItem>
@@ -220,6 +220,7 @@ const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string]
                             urlParts={urlParts}
                             item={item}
                             onRemove={() => {
+                                removeHistoryItem(url, id);
                                 setIsExpanded(isExpanded && numberOfItems > 1)
                             }}
                         />
@@ -229,13 +230,13 @@ const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string]
 
 }
 
-const HistoryHeader = ({itemCount}: { itemCount: number }) => {
+const HistoryHeader = ({ itemCount }: { itemCount: number }) => {
     const isExpanded = useHistoryStore(state => state.isHistoryExpanded);
     const setIsExpanded = useHistoryStore(state => state.setHistoryExpanded);
 
     return <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium">
-            <History/> History <Badge variant="secondary">{itemCount} items</Badge>
+            <History /> History <Badge variant="secondary">{itemCount} items</Badge>
         </div>
 
         <Button
@@ -244,43 +245,43 @@ const HistoryHeader = ({itemCount}: { itemCount: number }) => {
             onClick={() => setIsExpanded(!isExpanded)}
         >
             {isExpanded
-                ? <><ChevronDown/> Collapse</>
-                : <><ChevronUp/> Expand</>
+                ? <><ChevronDown /> Collapse</>
+                : <><ChevronUp /> Expand</>
             }
         </Button>
     </div>
 }
 
-const HistoryCard = ({urlParts, item, onRemove}: {
+const HistoryCard = ({ urlParts, item, onRemove }: {
     urlParts: [boolean, string][],
     item: HistoryItem,
     onRemove: (item: HistoryItem) => void
 }) =>
-    (
-        <Card className="p-4 gap-2 flex flex-row snap-center group">
-            <CardContent className="overflow-x-hidden px-0 space-y-1">
-                <HistoryItemName itemName={item.name}/>
+(
+    <Card className="p-4 gap-2 flex flex-row snap-center group">
+        <CardContent className="overflow-x-hidden px-0 space-y-1">
+            <HistoryItemName itemName={item.name} />
 
-                <PlaceholderUrlPreview
-                    urlParts={urlParts}
-                    placeholderValueMap={item.placeholders}
-                    className="overflow-x-auto text-muted-foreground"
-                />
-            </CardContent>
-            <CardFooter className="px-0">
-                <Button
-                    type="button"
-                    variant="ghost"
-                    className="text-destructive hover:bg-destructive/20 hover:text-destructive"
-                    onClick={() => onRemove(item)}
-                >
-                    <X/>
-                </Button>
-            </CardFooter>
-        </Card>
-    );
+            <PlaceholderUrlPreview
+                urlParts={urlParts}
+                placeholderValueMap={item.placeholders}
+                className="overflow-x-auto text-muted-foreground"
+            />
+        </CardContent>
+        <CardFooter className="px-0">
+            <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive hover:bg-destructive/20 hover:text-destructive"
+                onClick={() => onRemove(item)}
+            >
+                <X />
+            </Button>
+        </CardFooter>
+    </Card>
+);
 
-const HistoryItemName = ({itemName}: { itemName: string }) => {
+const HistoryItemName = ({ itemName }: { itemName: string }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(itemName);
 
@@ -298,7 +299,7 @@ const HistoryItemName = ({itemName}: { itemName: string }) => {
                             setIsEditing(true);
                         }}
                     >
-                        <Pencil/>
+                        <Pencil />
                     </Button>
                 </div>
             )
@@ -316,7 +317,7 @@ const HistoryItemName = ({itemName}: { itemName: string }) => {
                             setIsEditing(false);
                         }}
                     >
-                        <Check/>
+                        <Check />
                     </Button>
                     <Button
                         variant="ghost"
@@ -325,7 +326,7 @@ const HistoryItemName = ({itemName}: { itemName: string }) => {
                             setIsEditing(false);
                         }}
                     >
-                        <X/>
+                        <X />
                     </Button>
                 </div>
             )
