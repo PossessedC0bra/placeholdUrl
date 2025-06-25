@@ -67,13 +67,12 @@ function Popup() {
 
         // Save to history
         const historyItem: HistoryItem = {
-            id: Date.now(), // Use timestamp as a unique ID
             name: resolvedUrl,
             placeholders: placeholderValueMap,
             lastUsed: Date.now(),
             usageCount: 1
         };
-        addHistoryItem(plainUrl, historyItem);
+        addHistoryItem(plainUrl, resolvedUrl, historyItem);
 
         await chrome.tabs.update(tab!.id!, {url: resolvedUrl});
         window.close(); // Close the popup after replacing
@@ -178,13 +177,17 @@ const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string]
     const [historyView] = useAutoAnimate();
     const [historyList] = useAutoAnimate();
 
-    return history.length === 0
+    const numberOfItems = Object.values(history).length;
+    const removeHistoryItem = useHistoryStore(state => state.removeHistoryItem);
+
+    return numberOfItems === 0
         ? null
         : <div
             ref={historyView}
             className={`${!isExpanded ? "flex-none" : "flex-1"} px-4 overflow-y-hidden flex flex-col gap-2`}
         >
-            <HistoryHeader itemCount={history.length}/>
+            <HistoryHeader itemCount={numberOfItems}/>
+
             {isExpanded
                 && <div className="flex items-center gap-2">
                     <InputWithAdornments
@@ -204,19 +207,20 @@ const HistoryView = ({url, urlParts}: { url: string, urlParts: [boolean, string]
                     </Select>
                 </div>
             }
+
             <div
                 ref={historyList}
                 className={`${!isExpanded ? "flex-none max-h-[120px] snap-y snap-mandatory" : "flex-auto"} overflow-y-auto flex flex-col gap-2`}
             >
-                {history
-                    .filter(h => h.name.toLowerCase().includes(searchQuery))
-                    .map((item) => (
+                {Object.entries(history)
+                    .filter(([_, h]) => h.name.toLowerCase().includes(searchQuery))
+                    .map(([id, item]) => (
                         <HistoryCard
                             key={item.name}
                             urlParts={urlParts}
                             item={item}
                             onRemove={() => {
-                                setIsExpanded(isExpanded && history.length > 1)
+                                setIsExpanded(isExpanded && numberOfItems > 1)
                             }}
                         />
                     ))}
