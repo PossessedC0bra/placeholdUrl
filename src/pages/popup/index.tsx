@@ -3,22 +3,18 @@ import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
 import {ThemeProvider} from "@/components/ThemeProvider.tsx";
-import {MockBrowserStorageApi, MockBrowserTabApi} from "@/lib/browser/mock/MockBrowserApi.ts";
-import {ChromeExtensionStorageApi, ChromeExtensionTabApi} from "@/lib/browser/chrome/ChromeApi.ts";
-import Popup from "@/popup/Popup.tsx";
+import Popup from "./Popup";
 
 const isProduction = import.meta.env.MODE === 'production';
 
 scan({
-    enable: !isProduction,
-})
+    enabled: !isProduction,
+});
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ThemeProvider>
             <Popup
-                browserTabApi={isProduction ? ChromeExtensionTabApi.init() : MockBrowserTabApi.init()}
-                browserStorageApi={isProduction ? ChromeExtensionStorageApi.init() : MockBrowserStorageApi.init()}
             />
         </ThemeProvider>
     </StrictMode>,

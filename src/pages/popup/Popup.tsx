@@ -2,14 +2,15 @@ import {useEffect, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {ExternalLink, Replace} from "lucide-react";
+import {Check, ChevronDown, ChevronUp, ExternalLink, Pencil, Replace, Search, X, History} from "lucide-react";
 import {GLOBAL_PLACEHOLDER_REGEX, toPlaceholderName} from "@/lib/placeholder/placeholderUtil";
 import {Label} from "@/components/ui/label";
 import {InputWithAdornments} from "@/components/InputWithAdornments.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Card, CardContent, CardFooter} from "@/components/ui/card.tsx";
-import {useHistoryStore} from "@/pages/popup/PopupStore.ts";
+import {useHistoryStore, type HistoryItem} from "@/pages/popup/PopupStore.ts";
 import {cn} from "@/lib/utils.ts";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 function Popup() {
     const [tab, setTab] = useState<chrome.tabs.Tab | null>(null);
@@ -119,7 +120,7 @@ function Popup() {
             {/* History View */}
             <HistoryView
                 url={plainUrl}
-                urlParts={urlParts.map(part => [!!part.match(GLOBAL_PLACEHOLDER_REGEX), part])}
+                urlParts={urlParts}
             />
 
             {/* Replace Button */}
