@@ -17,6 +17,7 @@ export default defineManifest((env) => ({
 
     permissions: [
         "tabs",
+        "storage",
     ],
 
     background: {

@@ -48,6 +48,7 @@ function Popup() {
         })();
     }, []);
 
+    const addHistoryItem = useHistoryStore(state => state.addHistoryItem);
     const isHistoryExpanded = useHistoryStore(state => state.isHistoryExpanded);
 
     const handlePlaceholderChange = (key: string, value: string) => setPlaceholderValueMap({
@@ -63,6 +64,16 @@ function Popup() {
                 encodeURIComponent(val)
             );
         }
+
+        // Save to history
+        const historyItem: HistoryItem = {
+            id: Date.now(), // Use timestamp as a unique ID
+            name: resolvedUrl,
+            placeholders: placeholderValueMap,
+            lastUsed: Date.now(),
+            usageCount: 1
+        };
+        addHistoryItem(plainUrl, historyItem);
 
         await chrome.tabs.update(tab!.id!, {url: resolvedUrl});
         window.close(); // Close the popup after replacing
