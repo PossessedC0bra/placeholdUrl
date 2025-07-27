@@ -129,3 +129,12 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Fix for auto-animate conflicting with disabled button opacity */
+@layer utilities {
+    /* Ensure disabled buttons maintain 50% opacity even when auto-animate sets opacity to 1 */
+    button:disabled,
+    [role="button"]:disabled {
+        opacity: 0.5 !important;
+    }
+}
