@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, Pencil, X } from "lucide-react";
-import { useHistoryStore } from "@/pages/popup/PopupStore";
+import { useHistoryStore } from "@/stores/historyStore";
 
 interface HistoryItemNameProps {
     itemName: string;
@@ -13,7 +13,7 @@ interface HistoryItemNameProps {
 export const HistoryItemName = ({ itemName, url, itemId }: HistoryItemNameProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(itemName);
-    const updateHistoryItem = useHistoryStore(state => state.updateHistoryItem);
+    const { updateHistoryItem } = useHistoryStore();
 
     const handleSave = () => {
         if (name.trim() && name !== itemName) {

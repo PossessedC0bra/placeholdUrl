@@ -1,29 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Replace } from "lucide-react";
 import { GLOBAL_PLACEHOLDER_REGEX } from "@/lib/placeholder/placeholderUtil";
-import { useHistoryStore, type HistoryItem } from "@/pages/popup/PopupStore";
+import { useHistoryStore, usePopupStore, type HistoryItem } from "@/stores";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { PlaceholderUrlPreview } from "@/components/PlaceholderUrlPreview";
 import { HistoryView } from "@/components/HistoryView";
 import { PlaceholderForm } from "@/components/PlaceholderForm";
 
 function Popup() {
-    const [tab, setTab] = useState<chrome.tabs.Tab | null>(null);
-    const [plainUrl, setPlainUrl] = useState("");
-    const [urlParts, setUrlParts] = useState<[boolean, string][]>([]);
-    const [placeholderValueMap, setPlaceholderValueMap] = useState({} as Record<string, string>);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // Popup state (non-persisted)
+    const {
+        isLoading,
+        setIsLoading,
+        error,
+        setError,
+        currentTab,
+        setCurrentTab,
+        plainUrl,
+        setPlainUrl,
+        urlParts,
+        setUrlParts,
+        placeholderValueMap,
+        setPlaceholderValueMap,
+        updatePlaceholderValue,
+        isHistoryExpanded,
+        setHistoryExpanded,
+        isFormValid,
+        resetError
+    } = usePopupStore();
 
-    const addHistoryItem = useHistoryStore(state => state.addHistoryItem);
-    const isHistoryExpanded = useHistoryStore(state => state.isHistoryExpanded);
-    const setHistoryExpanded = useHistoryStore(state => state.setHistoryExpanded);
+    // History state (persisted)
+    const { addHistoryItem } = useHistoryStore();
+
+    const [parent] = useAutoAnimate();
 
     useEffect(() => {
         (async () => {
             try {
                 setIsLoading(true);
+                resetError();
+                
                 const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
                 
                 if (!activeTab || !activeTab.url) {
@@ -31,16 +48,16 @@ function Popup() {
                     return;
                 }
 
-                setTab(activeTab);
-                const plainUrl = decodeURIComponent(activeTab.url);
-                setPlainUrl(plainUrl);
+                setCurrentTab(activeTab);
+                const decodedUrl = decodeURIComponent(activeTab.url);
+                setPlainUrl(decodedUrl);
 
-                const urlParts = plainUrl
+                const urlParts = decodedUrl
                     .split(GLOBAL_PLACEHOLDER_REGEX)
                     .map(part => [GLOBAL_PLACEHOLDER_REGEX.test(part), part] as [boolean, string]);
                 setUrlParts(urlParts);
 
-                setPlaceholderValueMap(urlParts
+                const placeholderMap = urlParts
                     .filter(([isPlaceholder]) => isPlaceholder)
                     .reduce(
                         (map, [, placeholder]) => {
@@ -48,7 +65,8 @@ function Popup() {
                             return map;
                         },
                         {} as Record<string, string>
-                    ));
+                    );
+                setPlaceholderValueMap(placeholderMap);
             } catch (err) {
                 setError("Failed to load tab information.");
                 console.error("Error loading tab:", err);
@@ -56,7 +74,7 @@ function Popup() {
                 setIsLoading(false);
             }
         })();
-    }, []);
+    }, [setIsLoading, setError, setCurrentTab, setPlainUrl, setUrlParts, setPlaceholderValueMap, resetError]);
 
     // Global keyboard shortcuts
     useEffect(() => {
@@ -80,19 +98,13 @@ function Popup() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [isHistoryExpanded, setHistoryExpanded]);
 
-    const handlePlaceholderChange = (key: string, value: string) => 
-        setPlaceholderValueMap(prev => ({
-            ...prev,
-            [key]: value.trim()
-        }));
-
     const handleUseHistoryItem = (placeholders: Record<string, string>) => {
         setPlaceholderValueMap(placeholders);
         setHistoryExpanded(false);
     };
 
     const handleSubmit = async () => {
-        if (!tab?.id || !plainUrl || !isFormValid) return;
+        if (!currentTab?.id || !plainUrl || !isFormValid()) return;
 
         try {
             let resolvedUrl = plainUrl;
@@ -112,7 +124,7 @@ function Popup() {
             };
             addHistoryItem(plainUrl, resolvedUrl, historyItem);
 
-            await chrome.tabs.update(tab.id, { url: resolvedUrl });
+            await chrome.tabs.update(currentTab.id, { url: resolvedUrl });
             window.close();
         } catch (err) {
             setError("Failed to navigate to URL.");
@@ -124,11 +136,6 @@ function Popup() {
         e.preventDefault();
         await handleSubmit();
     };
-
-    const [parent] = useAutoAnimate();
-    
-    const hasPlaceholders = Object.keys(placeholderValueMap).length > 0;
-    const isFormValid = hasPlaceholders && Object.values(placeholderValueMap).every(v => v.trim() !== "");
 
     if (isLoading) {
         return (
@@ -193,7 +200,7 @@ function Popup() {
                     >
                         <PlaceholderForm
                             placeholderValueMap={placeholderValueMap}
-                            onPlaceholderChange={handlePlaceholderChange}
+                            onPlaceholderChange={updatePlaceholderValue}
                             onSubmit={handleSubmit}
                         />
                     </div>
@@ -211,7 +218,7 @@ function Popup() {
             {!isHistoryExpanded && (
                 <Button
                     type="submit"
-                    disabled={!isFormValid}
+                    disabled={!isFormValid()}
                     className="mx-3"
                 >
                     <ExternalLink />

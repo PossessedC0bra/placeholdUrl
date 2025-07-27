@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, History } from "lucide-react";
-import { useHistoryStore } from "@/pages/popup/PopupStore";
+import { usePopupStore } from "@/stores/popupStore";
 
 interface HistoryHeaderProps {
     itemCount: number;
 }
 
 export const HistoryHeader = ({ itemCount }: HistoryHeaderProps) => {
-    const isExpanded = useHistoryStore(state => state.isHistoryExpanded);
-    const setIsExpanded = useHistoryStore(state => state.setHistoryExpanded);
+    const { isHistoryExpanded, setHistoryExpanded } = usePopupStore();
 
     return (
         <div className="flex items-center justify-between">
@@ -21,9 +20,9 @@ export const HistoryHeader = ({ itemCount }: HistoryHeaderProps) => {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={() => setHistoryExpanded(!isHistoryExpanded)}
             >
-                {isExpanded
+                {isHistoryExpanded
                     ? <><ChevronDown /> Collapse</>
                     : <><ChevronUp /> Expand</>
                 }

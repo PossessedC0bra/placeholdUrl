@@ -11,9 +11,6 @@ export interface HistoryItem {
 }
 
 interface HistoryState {
-    isHistoryExpanded: boolean;
-    setHistoryExpanded: (expanded: boolean) => void;
-
     history: Record<string, Record<string, HistoryItem>>;
     addHistoryItem: (url: string, id: string, item: HistoryItem) => void;
     updateHistoryItem: (url: string, id: string, newName: string) => void;
@@ -51,12 +48,7 @@ const ChromeExtensionLocalStorage: StateStorage = {
 export const useHistoryStore = create<HistoryState>()(
     persist(
         immer((set) => ({
-            isHistoryExpanded: false,
             history: {},
-
-            setHistoryExpanded: (expanded) => set((state) => {
-                state.isHistoryExpanded = expanded;
-            }),
 
             addHistoryItem: (url, id, item) =>
                 set((state) => {

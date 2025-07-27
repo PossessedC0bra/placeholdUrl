@@ -3,7 +3,8 @@ import { Search } from "lucide-react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { InputWithAdornments } from "@/components/InputWithAdornments";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useHistoryStore } from "@/pages/popup/PopupStore";
+import { useHistoryStore } from "@/stores/historyStore";
+import { usePopupStore } from "@/stores/popupStore";
 import { HistoryHeader } from "@/components/HistoryHeader";
 import { HistoryCard } from "@/components/HistoryCard";
 
@@ -16,11 +17,18 @@ interface HistoryViewProps {
 type SortOption = 'lastUsed' | 'usageCount' | 'name';
 
 export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProps) => {
-    const isExpanded = useHistoryStore(state => state.isHistoryExpanded);
-    const setIsExpanded = useHistoryStore(state => state.setHistoryExpanded);
-    const historyStore = useHistoryStore(state => state.history);
-    const removeHistoryItem = useHistoryStore(state => state.removeHistoryItem);
-    const incrementUsageCount = useHistoryStore(state => state.incrementUsageCount);
+    // Get history state from history store
+    const {
+        history: historyStore,
+        removeHistoryItem,
+        incrementUsageCount
+    } = useHistoryStore();
+    
+    // Get UI state from popup store
+    const {
+        isHistoryExpanded,
+        setHistoryExpanded
+    } = usePopupStore();
     
     const history = historyStore[url] || {};
     const [searchQuery, setSearchQuery] = useState('');
@@ -55,7 +63,7 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
     const handleUseHistoryItem = (id: string, placeholders: Record<string, string>) => {
         incrementUsageCount(url, id);
         onUseHistoryItem?.(placeholders);
-        setIsExpanded(false);
+        setHistoryExpanded(false);
     };
 
     if (numberOfItems === 0) {
@@ -65,11 +73,11 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
     return (
         <div
             ref={historyView}
-            className={`${!isExpanded ? "flex-none" : "flex-1"} px-4 overflow-y-hidden flex flex-col gap-2`}
+            className={`${!isHistoryExpanded ? "flex-none" : "flex-1"} px-4 overflow-y-hidden flex flex-col gap-2`}
         >
             <HistoryHeader itemCount={numberOfItems} />
 
-            {isExpanded && (
+            {isHistoryExpanded && (
                 <div className="flex items-center gap-2">
                     <InputWithAdornments
                         startAdornment={<Search />}
@@ -92,7 +100,7 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
 
             <div
                 ref={historyList}
-                className={`${!isExpanded ? "flex-none max-h-[120px] snap-y snap-mandatory" : "flex-auto"} overflow-y-auto flex flex-col gap-2`}
+                className={`${!isHistoryExpanded ? "flex-none max-h-[120px] snap-y snap-mandatory" : "flex-auto"} overflow-y-auto flex flex-col gap-2`}
             >
                 {filteredAndSortedHistory.length === 0 ? (
                     <div className="text-center text-sm text-muted-foreground py-4">
@@ -108,7 +116,7 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
                             itemId={id}
                             onRemove={() => {
                                 removeHistoryItem(url, id);
-                                setIsExpanded(isExpanded && numberOfItems > 1);
+                                setHistoryExpanded(isHistoryExpanded && numberOfItems > 1);
                             }}
                             onUse={onUseHistoryItem ? (placeholders) => handleUseHistoryItem(id, placeholders) : undefined}
                         />

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { X, ArrowUpRight } from "lucide-react";
-import type { HistoryItem } from "@/pages/popup/PopupStore";
+import type { HistoryItem } from "@/stores/historyStore";
 import { PlaceholderUrlPreview } from "@/components/PlaceholderUrlPreview";
 import { HistoryItemName } from "@/components/HistoryItemName";
 
