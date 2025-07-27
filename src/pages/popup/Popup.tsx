@@ -1,129 +1,230 @@
-import {useEffect, useState} from "react";
-import {Badge} from "@/components/ui/badge";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {ExternalLink, Replace} from "lucide-react";
-import {GLOBAL_PLACEHOLDER_REGEX, toPlaceholderName} from "@/lib/placeholder/placeholderUtil";
-import {Label} from "@/components/ui/label";
-
-function extractPlaceholders(url: string): Record<string, string> {
-    return Array.from(url.matchAll(GLOBAL_PLACEHOLDER_REGEX))
-        .map(match => match[0])
-        .filter(Boolean)
-        .reduce(
-            (placeholderValueMap, placeholderName) => {
-                placeholderValueMap[placeholderName!] = "";
-                return placeholderValueMap;
-            },
-            {} as Record<string, string>
-        )
-}
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Replace } from "lucide-react";
+import { GLOBAL_PLACEHOLDER_REGEX } from "@/lib/placeholder/placeholderUtil";
+import { useHistoryStore, usePopupStore, type HistoryItem } from "@/stores";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { PlaceholderUrlPreview } from "@/components/PlaceholderUrlPreview";
+import { HistoryView } from "@/components/HistoryView";
+import { PlaceholderForm } from "@/components/PlaceholderForm";
 
 function Popup() {
-    const [tab, setTab] = useState<chrome.tabs.Tab | null>(null);
-    const [plainUrl, setPlainUrl] = useState("");
-    const [urlParts, setUrlParts] = useState<string[]>([]);
-    const [placeholderValueMap, setPlaceholderValueMap] = useState({} as Record<string, string>);
+    // Popup state (non-persisted)
+    const {
+        isLoading,
+        setIsLoading,
+        error,
+        setError,
+        currentTab,
+        setCurrentTab,
+        plainUrl,
+        setPlainUrl,
+        urlParts,
+        setUrlParts,
+        placeholderValueMap,
+        setPlaceholderValueMap,
+        updatePlaceholderValue,
+        isHistoryExpanded,
+        setHistoryExpanded,
+        isFormValid,
+        resetError
+    } = usePopupStore();
+
+    // History state (persisted)
+    const { addHistoryItem } = useHistoryStore();
+
+    const [parent] = useAutoAnimate();
 
     useEffect(() => {
         (async () => {
-            const [activeTab] = await chrome.tabs.query({active: true, currentWindow: true});
-            if (!activeTab || !activeTab.url) {
-                console.error("No active tab with a valid URL found.");
-                return;
+            try {
+                setIsLoading(true);
+                resetError();
+                
+                const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                
+                if (!activeTab || !activeTab.url) {
+                    setError("No active tab with a valid URL found.");
+                    return;
+                }
+
+                setCurrentTab(activeTab);
+                const decodedUrl = decodeURIComponent(activeTab.url);
+                setPlainUrl(decodedUrl);
+
+                const urlParts = decodedUrl
+                    .split(GLOBAL_PLACEHOLDER_REGEX)
+                    .map(part => [GLOBAL_PLACEHOLDER_REGEX.test(part), part] as [boolean, string]);
+                setUrlParts(urlParts);
+
+                const placeholderMap = urlParts
+                    .filter(([isPlaceholder]) => isPlaceholder)
+                    .reduce(
+                        (map, [, placeholder]) => {
+                            map[placeholder] = '';
+                            return map;
+                        },
+                        {} as Record<string, string>
+                    );
+                setPlaceholderValueMap(placeholderMap);
+            } catch (err) {
+                setError("Failed to load tab information.");
+                console.error("Error loading tab:", err);
+            } finally {
+                setIsLoading(false);
             }
-
-            setTab(activeTab);
-
-            const plainUrl = decodeURIComponent(activeTab.url!);
-            setPlainUrl(plainUrl);
-            setUrlParts(plainUrl.split(GLOBAL_PLACEHOLDER_REGEX));
-            setPlaceholderValueMap(extractPlaceholders(plainUrl));
         })();
-    }, []);
+    }, [setIsLoading, setError, setCurrentTab, setPlainUrl, setUrlParts, setPlaceholderValueMap, resetError]);
 
-    const handlePlaceholderChange = (key: string, value: string) => setPlaceholderValueMap({
-        ...placeholderValueMap,
-        [key]: value.trim()
-    });
+    // Global keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Escape to close popup or collapse history
+            if (e.key === 'Escape') {
+                if (isHistoryExpanded) {
+                    setHistoryExpanded(false);
+                } else {
+                    window.close();
+                }
+            }
+            // Ctrl/Cmd + H to toggle history
+            else if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+                e.preventDefault();
+                setHistoryExpanded(!isHistoryExpanded);
+            }
+        };
 
-    const handleReplace = async () => {
-        let resolvedUrl = plainUrl;
-        for (const [placeholder, val] of Object.entries(placeholderValueMap)) {
-            resolvedUrl = resolvedUrl.replace(
-                new RegExp(placeholder, 'g'),
-                encodeURIComponent(val)
-            );
-        }
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isHistoryExpanded, setHistoryExpanded]);
 
-        await chrome.tabs.update(tab!.id!, {url: resolvedUrl});
-        window.close(); // Close the popup after replacing
+    const handleUseHistoryItem = (placeholders: Record<string, string>) => {
+        setPlaceholderValueMap(placeholders);
+        setHistoryExpanded(false);
     };
 
+    const handleSubmit = async () => {
+        if (!currentTab?.id || !plainUrl || !isFormValid()) return;
+
+        try {
+            let resolvedUrl = plainUrl;
+            for (const [placeholder, val] of Object.entries(placeholderValueMap)) {
+                resolvedUrl = resolvedUrl.replace(
+                    new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                    encodeURIComponent(val)
+                );
+            }
+
+            // Save to history
+            const historyItem: HistoryItem = {
+                name: resolvedUrl,
+                placeholders: { ...placeholderValueMap },
+                lastUsed: Date.now(),
+                usageCount: 1
+            };
+            addHistoryItem(plainUrl, resolvedUrl, historyItem);
+
+            await chrome.tabs.update(currentTab.id, { url: resolvedUrl });
+            window.close();
+        } catch (err) {
+            setError("Failed to navigate to URL.");
+            console.error("Error updating tab:", err);
+        }
+    };
+
+    const handleReplace = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await handleSubmit();
+    };
+
+    if (isLoading) {
+        return (
+            <div className="w-[500px] h-[200px] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-sm text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="w-[500px] h-[200px] flex items-center justify-center">
+                <div className="text-center space-y-2">
+                    <p className="text-sm text-destructive">{error}</p>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => window.close()}
+                    >
+                        Close
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <form onSubmit={handleReplace} className="w-[500px] max-h-[600px] py-3 flex flex-col gap-4">
+        <form
+            ref={parent}
+            onSubmit={handleReplace}
+            className="w-[500px] max-h-[600px] py-3 flex flex-col gap-4"
+        >
             {/* Header */}
-            <div className="mx-3 flex items-center gap-2">
-                <Replace/>
-                <span className="text-2xl font-bold">PlaceholdURL</span>
+            <div className="mx-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Replace />
+                    <span className="text-2xl font-bold">PlaceholdURL</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                    Press Esc to close • Ctrl+H for history
+                </div>
             </div>
 
-            {/* URL Preview */}
-            <code className="bg-muted mx-3 p-3 overflow-x-auto rounded-md text-xs text-nowrap leading-relaxed">
-                {urlParts
-                    .map((part, index) => {
-                        const match = part.match(GLOBAL_PLACEHOLDER_REGEX);
-                        if (!match) {
-                            return <span key={index}>{part}</span>;
-                        }
+            {!isHistoryExpanded && (
+                <>
+                    <div
+                        key="urlPreview"
+                        className="flex-none mx-4 p-2 bg-muted rounded-md border overflow-x-auto"
+                    >
+                        <PlaceholderUrlPreview 
+                            urlParts={urlParts} 
+                            placeholderValueMap={placeholderValueMap} 
+                        />
+                    </div>
 
-                        return <Badge
-                            key={index}
-                            variant={placeholderValueMap[part] ? "lightBlue" : "lightRed"}
-                        >
-                            {placeholderValueMap[part] || part}
-                        </Badge>
+                    <div
+                        key="placeholders"
+                        className="flex-1 px-4 overflow-y-auto flex flex-col [&>*:last-child]:pb-1"
+                    >
+                        <PlaceholderForm
+                            placeholderValueMap={placeholderValueMap}
+                            onPlaceholderChange={updatePlaceholderValue}
+                            onSubmit={handleSubmit}
+                        />
+                    </div>
+                </>
+            )}
 
-                    })}
-            </code>
-
-            {/* Placeholder Fields */}
-            <div className="px-3 pb-1 overflow-y-auto space-y-2">
-                {Object.keys(placeholderValueMap).length === 0
-                    ? (
-                        <div className="flex justify-center text-sm text-muted-foreground">
-                            No placeholders
-                            found
-                        </div>
-                    )
-                    : (
-                        Object.keys(placeholderValueMap)
-                            .map((placeholder, idx) => (
-                                <div key={placeholder} className="space-y-1">
-                                    <Label htmlFor={placeholder}>
-                                        {toPlaceholderName(placeholder)}
-                                    </Label>
-                                    <Input
-                                        id={placeholder}
-                                        value={placeholderValueMap[placeholder] || ""}
-                                        onChange={(e) => handlePlaceholderChange(placeholder, e.target.value)}
-                                        autoFocus={idx === 0}
-                                    />
-                                </div>
-                            ))
-                    )
-                }
-            </div>
+            {/* History View */}
+            <HistoryView 
+                url={plainUrl} 
+                urlParts={urlParts} 
+                onUseHistoryItem={handleUseHistoryItem}
+            />
 
             {/* Replace Button */}
-            <Button
-                type="submit"
-                disabled={Object.keys(placeholderValueMap).length === 0 || Object.values(placeholderValueMap).some(v => v.trim() === "")}
-                className="mx-3"
-            >
-                <ExternalLink/>
-                Open
-            </Button>
+            {!isHistoryExpanded && (
+                <Button
+                    type="submit"
+                    disabled={!isFormValid()}
+                    className="mx-3"
+                >
+                    <ExternalLink />
+                    Open URL
+                </Button>
+            )}
         </form>
     );
 }
