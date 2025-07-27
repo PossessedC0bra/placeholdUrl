@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Replace } from "lucide-react";
 import { GLOBAL_PLACEHOLDER_REGEX } from "@/lib/placeholder/placeholderUtil";
 import { useHistoryStore, usePopupStore, type HistoryItem } from "@/stores";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useAutoAnimateWithDisabledSupport } from "@/hooks/useAutoAnimateWithDisabledSupport";
 import { PlaceholderUrlPreview } from "@/components/PlaceholderUrlPreview";
 import { HistoryView } from "@/components/HistoryView";
 import { PlaceholderForm } from "@/components/PlaceholderForm";
@@ -33,7 +33,7 @@ function Popup() {
     // History state (persisted)
     const { addHistoryItem } = useHistoryStore();
 
-    const [parent] = useAutoAnimate();
+    const [parent] = useAutoAnimateWithDisabledSupport();
 
     useEffect(() => {
         (async () => {

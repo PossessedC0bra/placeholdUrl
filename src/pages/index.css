@@ -128,4 +128,65 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* 
+     * Fix for auto-animate opacity conflicts with disabled buttons
+     * Ensures disabled buttons maintain their opacity even during animations
+     */
+    button:disabled,
+    [data-slot="button"]:disabled,
+    .disabled {
+        opacity: 0.5 !important;
+        pointer-events: none !important;
+        cursor: not-allowed !important;
+    }
+
+    /* 
+     * Additional fix for any element with disabled attribute during animations
+     * This ensures the disabled state is preserved even when auto-animate 
+     * temporarily sets opacity to 1
+     */
+    [disabled] {
+        opacity: 0.5 !important;
+    }
+
+    /* 
+     * Specifically target elements that might be affected by auto-animate
+     * during keyframe animations
+     */
+    @keyframes auto-animate-in {
+        from {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes auto-animate-out {
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+    }
+
+    /* 
+     * Override auto-animate's opacity changes for disabled elements
+     * during any CSS animation
+     */
+    button:disabled,
+    [data-slot="button"]:disabled,
+    input:disabled,
+    select:disabled,
+    textarea:disabled,
+    .disabled {
+        animation-name: none !important;
+        opacity: 0.5 !important;
+    }
 }

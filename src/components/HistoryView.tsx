@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useAutoAnimateWithDisabledSupport } from "@/hooks/useAutoAnimateWithDisabledSupport";
 import { InputWithAdornments } from "@/components/InputWithAdornments";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useHistoryStore } from "@/stores/historyStore";
@@ -34,8 +34,8 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<SortOption>('lastUsed');
 
-    const [historyView] = useAutoAnimate();
-    const [historyList] = useAutoAnimate();
+    const [historyView] = useAutoAnimateWithDisabledSupport();
+    const [historyList] = useAutoAnimateWithDisabledSupport();
 
     const numberOfItems = Object.keys(history).length;
 
