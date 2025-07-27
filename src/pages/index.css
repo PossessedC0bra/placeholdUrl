@@ -19,6 +19,8 @@
     --muted-foreground: oklch(0.556 0 0);
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
+    --success: oklch(0.72 0.19 150);
+    --success-foreground: oklch(0.72 0.19 150);
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
@@ -54,6 +56,8 @@
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
     --accent: oklch(0.269 0 0);
+    --success: oklch(0.53 0.14 150);
+    --success-foreground: oklch(0.80 0.18 152);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.396 0.141 25.723);
     --destructive-foreground: oklch(0.637 0.237 25.331);
@@ -90,6 +94,8 @@
     --color-muted-foreground: var(--muted-foreground);
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);
@@ -121,5 +127,66 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /* 
+     * Fix for auto-animate opacity conflicts with disabled buttons
+     * Ensures disabled buttons maintain their opacity even during animations
+     */
+    button:disabled,
+    [data-slot="button"]:disabled,
+    .disabled {
+        opacity: 0.5 !important;
+        pointer-events: none !important;
+        cursor: not-allowed !important;
+    }
+
+    /* 
+     * Additional fix for any element with disabled attribute during animations
+     * This ensures the disabled state is preserved even when auto-animate 
+     * temporarily sets opacity to 1
+     */
+    [disabled] {
+        opacity: 0.5 !important;
+    }
+
+    /* 
+     * Specifically target elements that might be affected by auto-animate
+     * during keyframe animations
+     */
+    @keyframes auto-animate-in {
+        from {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes auto-animate-out {
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+    }
+
+    /* 
+     * Override auto-animate's opacity changes for disabled elements
+     * during any CSS animation
+     */
+    button:disabled,
+    [data-slot="button"]:disabled,
+    input:disabled,
+    select:disabled,
+    textarea:disabled,
+    .disabled {
+        animation-name: none !important;
+        opacity: 0.5 !important;
     }
 }
