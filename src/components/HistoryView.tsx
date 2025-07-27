@@ -41,7 +41,7 @@ export const HistoryView = ({ url, urlParts, onUseHistoryItem }: HistoryViewProp
 
     // Filter and sort history items
     const filteredAndSortedHistory = Object.entries(history)
-        .filter(([_, item]) => 
+        .filter(([, item]) => 
             item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             Object.values(item.placeholders).some(value => 
                 value.toLowerCase().includes(searchQuery.toLowerCase())
