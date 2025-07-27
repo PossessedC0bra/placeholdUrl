@@ -94,16 +94,16 @@ export const MockBrowserStorageApi: BrowserStorageApi = {
         if (typeof keys === 'string') {
             return JSON.parse(localStorage.getItem(keys) || '{}');
         } else if (Array.isArray(keys)) {
-            const result: Record<string, any> = {};
+            const result: Record<string, unknown> = {};
             for (const key of keys) {
                 result[key] = JSON.parse(localStorage.getItem(key) || '{}');
             }
             return result;
         } else if (typeof keys === 'object') {
-            const result = {};
+            const result: Record<string, unknown> = {};
             for (const key in keys) {
                 const storedValue = localStorage.getItem(key);
-                // @ts-ignore
+                // @ts-expect-error keys[key] type is not fully typed
                 result[key] = storedValue == null ? keys[key] : JSON.parse(storedValue);
             }
             return result;

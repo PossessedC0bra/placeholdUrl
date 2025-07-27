@@ -20,6 +20,7 @@ interface HistoryState {
     addHistoryItem: (url: string, id: string, item: HistoryItem) => void;
     updateHistoryItem: (url: string, id: string, newName: string) => void;
     removeHistoryItem: (url: string, id: string) => void;
+    clearHistoryForUrl: (url: string) => void;
 }
 
 const ChromeExtensionLocalStorage: StateStorage = {
@@ -51,7 +52,15 @@ export const useHistoryStore = create<HistoryState>()(
                         state.history[url] = {};
                     }
                     
-                    state.history[url][id] = item;
+                    // Check if item already exists and update usage count
+                    const existingItem = state.history[url][id];
+                    if (existingItem) {
+                        existingItem.usageCount += 1;
+                        existingItem.lastUsed = Date.now();
+                        existingItem.placeholders = item.placeholders;
+                    } else {
+                        state.history[url][id] = item;
+                    }
                 }),
 
             updateHistoryItem: (url, id, newName) =>
@@ -65,6 +74,11 @@ export const useHistoryStore = create<HistoryState>()(
             removeHistoryItem: (url, id) =>
                 set((state) => {
                     delete state.history[url][id];
+                }),
+
+            clearHistoryForUrl: (url) =>
+                set((state) => {
+                    delete state.history[url];
                 }),
         })),
         {
